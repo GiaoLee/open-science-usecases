@@ -22,6 +22,7 @@ class GitFixture(unittest.TestCase):
         self.addCleanup(self.temp.cleanup)
         self.root = Path(self.temp.name).resolve()
         self.git('init', '-q')
+        self.git('config', 'core.autocrlf', 'false')
         self.git('config', 'user.name', 'Test')
         self.git('config', 'user.email', 'test@example.invalid')
         self.entries = []
@@ -46,7 +47,7 @@ class GitFixture(unittest.TestCase):
             path = title + '/' + file
             (self.root / title).mkdir(exist_ok=True)
             (self.root / path).write_bytes(b'original')
-            entry[kind] = {'path': path, 'file_name': file, 'bytes': 8, 'sha256': '1' * 64}
+            entry[kind] = {'path': path, 'file_name': file, 'bytes': 8, 'sha256': hashlib.sha256(b'original').hexdigest()}
             if kind == 'case':
                 entry[kind]['release_url'] = ''
         self.entries.append(entry)
@@ -55,10 +56,11 @@ class GitFixture(unittest.TestCase):
     def write_manifest(self):
         (self.root / 'manifest.json').write_text(json.dumps(self.entries))
 
-    def change(self, kind='cover', declaration='2'):
+    def change(self, kind='cover', declaration=None):
         resource = self.entry[kind]
         (self.root / resource['path']).write_bytes(b'modified')  # Same length.
-        resource['sha256'] = declaration * 64
+        resource['sha256'] = (hashlib.sha256(b'modified').hexdigest() if declaration is None
+                              else declaration if len(declaration) == 64 else declaration * 64)
         self.write_manifest()
         return self.commit()
 
@@ -84,7 +86,7 @@ class PublishTests(GitFixture):
                 after = self.commit()
                 plan = publisher.prepare(self.root, None, after)
                 self.assertIn('a-case/' + filename, self.keys(plan))
-                self.assertFalse(publisher.prepare(self.root, json.dumps(self.entries), after)['files'])
+                self.assertEqual(self.keys(publisher.prepare(self.root, json.dumps(self.entries), after)), ['manifest.json'])
 
     def test_nonimage_cover_is_rejected_by_publication(self):
         for extension in ('txt', 'pdf', 'mp4', 'unknown', 'png.gz'):
@@ -108,7 +110,7 @@ class PublishTests(GitFixture):
         self.assertEqual(self.keys(plan), ['a-case/A Case.png', 'manifest.json'])
 
     def test_incremental_uploads_skip_unchanged_resources(self):
-        self.change(); self.change('introduction', '3')
+        self.change(); self.change('introduction')
         self.assertEqual(self.keys(self.plan()),
                          ['a-case/A Case.png', 'a-case/A Case.md', 'manifest.json'])
         self.assertEqual(self.plan()['packages'], [])
@@ -141,7 +143,7 @@ class PublishTests(GitFixture):
     def test_unchanged_manifest_and_file_only_changes_skip(self):
         (self.root / self.entry['case']['path']).write_bytes(b'file-only edit')
         self.commit()
-        self.assertEqual(self.plan()['files'], [])
+        self.assertEqual(self.keys(self.plan()), ['manifest.json'])
         self.assertEqual(self.plan()['packages'], [])
 
     def test_metadata_and_formatting_changes_publish_manifest_last(self):
@@ -157,6 +159,14 @@ class PublishTests(GitFixture):
         plan = self.plan()
         self.assertEqual(self.keys(plan), ['manifest.json'])
         class Upload:
+            manifest = plan['baseline']
+            def read_manifest(inner):
+                return inner.manifest
+            def commit_manifest(inner, path):
+                inner.manifest = path.read_text()
+                objects['manifest.json'] = path.read_bytes()
+            def refresh_cdn(inner, case_name=None, final=False):
+                pass
             def upload(inner, path, key):
                 objects[key] = path.read_bytes()
         publisher.apply(self.root, plan, Upload())
@@ -225,7 +235,7 @@ class PublishTests(GitFixture):
             self.plan()
 
     def test_missing_later_upload_blocks_all_s3_writes_without_packages(self):
-        self.change(); self.change('introduction', '3'); plan = self.plan()
+        self.change(); self.change('introduction'); plan = self.plan()
         (self.root / self.entry['introduction']['path']).unlink()
         calls = []
         class Upload:
@@ -236,8 +246,11 @@ class PublishTests(GitFixture):
         self.assertEqual(calls, [])
 
     def test_upload_failure_stops_before_later_resources_and_manifest(self):
-        self.change(); self.change('introduction', '3'); calls = []
+        self.change(); self.change('introduction'); calls = []
+        baseline = self.plan()['baseline']
         class Upload:
+            def read_manifest(inner):
+                return baseline
             def upload(inner, path, key):
                 calls.append(key)
                 raise OSError('upload failed')
@@ -252,7 +265,8 @@ class PublishTests(GitFixture):
         aws.chmod(0o755)
         s3 = self.root / 's3'; s3.mkdir()
         env = {**os.environ, 'PATH': str(fake) + os.pathsep + os.environ['PATH'],
-               'FAKE_S3_ROOT': str(s3), 'AWS_TARGET_FOLDER': 's3://bucket/cases'}
+               'FAKE_S3_ROOT': str(s3), 'AWS_TARGET_FOLDER': 's3://bucket/cases',
+               'AWS_DISTRIBUITION_ID': 'test-distribution'}
         return s3, env
 
     def test_s3_get_only_missing_key_returns_none(self):
@@ -268,9 +282,11 @@ class PublishTests(GitFixture):
                     with self.assertRaises((ValueError, subprocess.CalledProcessError)):
                         store.read_manifest()
 
-    def test_cli_upload_metadata_is_actual_content_hash_even_if_declaration_differs(self):
+    def test_cli_upload_metadata_matches_verified_content(self):
         self.change(); plan = self.plan()
         s3, env = self.s3_fixture()
+        baseline = s3 / 'bucket/cases/manifest.json'
+        baseline.parent.mkdir(parents=True); baseline.write_text(plan['baseline'])
         plan_file = self.root / 'plan.json'; plan_file.write_text(json.dumps(plan))
         result = subprocess.run([sys.executable, '-B', str(SCRIPTS / 'publish.py'), '--apply-plan', str(plan_file)],
                                 cwd=self.root, env=env, text=True, capture_output=True)
@@ -282,4 +298,4 @@ class PublishTests(GitFixture):
             self.assertEqual(metadata['bucket/cases/' + key]['sha256'],
                              hashlib.sha256((target / key).read_bytes()).hexdigest())
         calls = [json.loads(line) for line in (s3 / 'calls.jsonl').read_text().splitlines()]
-        self.assertEqual(calls[-1][3], 's3://bucket/cases/manifest.json')
+        self.assertEqual(calls[-1][:3], ['cloudfront', 'wait', 'invalidation-completed'])

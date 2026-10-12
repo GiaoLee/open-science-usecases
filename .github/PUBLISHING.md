@@ -9,8 +9,9 @@ Set these repository secrets:
 - `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY`
 - `AWS_DEFAULT_REGION`
 - `AWS_TARGET_FOLDER`, an `s3://bucket[/prefix]` URI
+- `AWS_DISTRIBUITION_ID`, the CloudFront distribution ID (existing secret spelling retained)
 
-The AWS identity needs permission to read the root manifest, list the target prefix, upload objects and delete objects under selected case `extracted/` prefixes. Listing permission is also needed for S3 to report an absent key as `NoSuchKey` instead of an ambiguous access error. Bucket configuration may require additional permissions such as KMS access.
+The AWS identity needs permission to read the root manifest, list the target prefix, upload objects, read object metadata and delete objects under selected case `extracted/` prefixes. Listing permission is also needed for S3 to report an absent key as `NoSuchKey` instead of an ambiguous access error. CloudFront also requires `CreateInvalidation` and `GetInvalidation`. The AWS CLI must support `s3api put-object --if-match` and `--if-none-match`. Bucket configuration may require additional permissions such as KMS access.
 
 The publisher reads `<AWS_TARGET_FOLDER>/manifest.json` using `GetObject`. Only an explicit `NoSuchKey` response means first publication. In that case it plans every resource declared by the fixed repository manifest and extracts every declared `.science` package. Local originals are uploaded; remote originals remain at `case.release_url`. Even an empty repository manifest is uploaded on first publication.
 
@@ -26,7 +27,15 @@ Added or modified case records are validated before downloading or extracting an
 
 The check stage validates manifest structure, paths, source rules and 64-digit hexadecimal SHA-256 declarations. Existing HEAD requests still check resource availability and byte size. It does not download resource bodies or compute their checksums. PR declaration checks may compare Git object identities to detect unsynchronized declarations; Git diffs are never the publication baseline. Publication checks select affected entries from the S3 plan, including entries that have been unchanged in Git since a previous failed release.
 
-Removed cases or resources disappear only from the final root manifest. Their original S3 files and extracted content remain. A local-to-remote package transition retains the old original S3 package. Unlisted files are ignored. Metadata-only or formatting changes still publish the final root manifest, even if no resource uploads are needed. An identical manifest skips processing and uploads.
+Publication has explicit, serial checkpoints, each with a complete root manifest:
+
+1. `ADD_CASE`: one new case per step, inserted at the head. New cases are processed in reverse repository order so their relative order is retained within the new head group.
+2. `UPDATE_CASE`: one changed case per step, replacing the same-name entry in place. Only changed resources are uploaded; title-only changes have no resource uploads.
+3. `REMOVE_CASE`: one remote-only entry per step is removed from the index. Its original S3 files and extracted content remain.
+4. `REORDER`: if needed, a resource-free step puts all remaining entries into repository array order.
+5. `FINAL_SYNC`: always uploads the original manifest bytes from the fixed target commit, including whitespace and key ordering. It is never run after an earlier failure. Even an identical or empty manifest gets this step and a CDN refresh.
+
+A local-to-remote package transition retains the old original S3 package. Removed resources are no longer listed but their original objects remain. Unlisted files are ignored. The final step does not fetch a moving branch tip: a later push belongs to a new run, preventing the manifest from referencing resources this run never prepared.
 
 ## Downloading and replacing science packages
 
@@ -61,13 +70,35 @@ Full frontend compatibility is **not yet established**:
 
 No frontend files were modified or frontend runtime tests run. These are source-audit findings for that local revision, not proof of deployed frontend behavior. Changing Actions alone does not fix these consumer issues.
 
-All selected packages must finish extraction before any S3 mutation. The publisher preflights all planned files and rechecks measured size/SHA-256 for every restored upload, then recursively clears each selected case's exact `<case.name>/extracted/` prefix, including stale and hidden objects. The trailing slash protects similarly named sibling prefixes. It uploads resources and generated files, then uploads the root manifest last. Unrelated cases and original resources are not deleted.
+All selected packages must finish extraction before any S3 mutation. The publisher preflights all planned files and rechecks measured size/SHA-256 for every restored upload, then, when that case's step starts, recursively clears its exact `<case.name>/extracted/` prefix, including stale and hidden objects. The trailing slash protects similarly named sibling prefixes. The resulting plan groups resources and generated files by case, with a separate manifest checkpoint after each case. Unrelated cases and original resources are not deleted.
 
-Every uploaded object receives user metadata `sha256`, computed by streaming the actual file being uploaded. This includes local originals, covers, introductions, extracted binary files, unchanged package metadata and the final root publication manifest. This metadata is not copied from the manifest declarations and is not used to select uploads.
+Each case step clears only its own selected extracted prefix, uploads its own files, verifies their S3 size and SHA metadata, and then commits its manifest. The next case is not touched until the current manifest is read back and its CloudFront invalidation completes. A removal, ordering or metadata-only step prints an empty file list explicitly.
+
+The root index uses conditional `PutObject`: `If-Match` with the ETag from the last read, or `If-None-Match: *` when absent. The baseline is also checked before each step's resource writes. A conflict stops execution; it never retries by dropping the condition. Only uncertain transport failures permit read-back recovery of an already successful PUT. ETags are version conditions, not file hashes. This protects index commits, not the multi-object resource writes; all publishers must still respect the workflow lock.
+
+Each step waits for CloudFront invalidation completion. Resource steps invalidate the root manifest and the current case prefix; metadata-only/removal/order steps invalidate the root manifest. The final step invalidates the whole publication prefix to recover resource-cache invalidations that failed in an earlier run. Paths derive from `AWS_TARGET_FOLDER`, not a hardcoded prefix. Per-step CDN waits increase total runtime and invalidation requests; the job has a 360-minute timeout. A timeout still requires a fresh dispatch.
+
+Every uploaded object receives user metadata `sha256`, computed by streaming the actual file being uploaded. This includes local originals, covers, introductions, extracted binary files, unchanged package metadata and the final root publication manifest. This metadata is not copied from the manifest declarations and is not used to select uploads. Publication preflight also compares selected local originals against their declared bytes and SHA-256 before any S3 mutation; this is separate from the metadata-only structure-check action.
+
+## Plans, logs and status artifacts
+
+Preparation saves `publication-plan.json` and a sibling `publication-plan/` directory. Extraction expands file lists before publication, so the final plan includes every restored object. Artifacts contain:
+
+- `baseline-manifest.json` and `plan.json`;
+- `steps/NNN-case-name/manifest.json`, `files.json`, `entry-before.json` and `entry-after.json` (ordering/final steps use their operation name);
+- `status.json`, `events.jsonl` and `summary.md`.
+
+Every step begins as `waiting`, moves to `uploading`, and becomes `completed` only after manifest read-back and CDN completion. Failures mark the current step and in-flight file `failed`; later steps remain `waiting`. `manifest_committed` is true for an acknowledged or recovered PUT, false before a known commit, and null when the transport result is unknown. `manifest_verified` records the separate read-back check. These fields and `cdn` distinguish a successful S3 commit from a failed read-back or cache refresh. Logs show the before/after entry, every file's source/key/size/SHA, extraction-prefix cleanup, manifest digest, timestamps and upload duration. Ordering steps show both name sequences. Downloads emit periodic byte progress.
+
+The Actions artifact step runs with `always()` and retains plans/statuses for 14 days. It uploads publication evidence, not staged package bodies. Artifacts may include declared external resource URLs; do not put credentials into manifest URLs. Preparation logs may show unexpanded package plans; extraction prints the complete lists before S3 writes. Abrupt runner termination can leave the last recorded operation as `uploading`; S3 remains the retry authority.
 
 ## Failure and retry behavior
 
-Any preparation, source check, download, unpack, delete or upload failure stops the current publication. A missing later local file is detected before any remote mutation, even when the plan has no packages. A failed resource upload prevents all later uploads, including the root manifest. If the final manifest upload itself fails, the run also fails.
+Any preparation, source check, download, unpack, delete, upload, object verification, manifest commit/read-back or CDN failure stops the run. All selected files are preflighted before the first remote mutation. A failed case's manifest is never committed before all its files succeed, and a failure never triggers `FINAL_SYNC` as a cleanup action.
+
+For example, after M1 and M2 succeed, M3 may upload files but fail to commit its manifest. S3 still records M2. A new run compares its fixed target against M2, skips already matching cases, and retransfers the incomplete M3 case. It does not reuse old extraction output, statuses or file-level checkpoints.
+
+If a PUT response is lost, the publisher reads the manifest back to resolve an uncertain transport result. If the manifest was committed but CDN refresh failed, the status records both facts. A fresh run may then need only `FINAL_SYNC`, whose prefix invalidation repairs the missed resource and manifest cache refresh.
 
 After fixing the cause, dispatch a new run against main:
 
@@ -75,9 +106,9 @@ After fixing the cause, dispatch a new run against main:
 gh workflow run check-structure.yml --repo OWNER/REPO --ref main
 ```
 
-Native reruns remain disabled; use a new dispatch with its own fixed SHA and a fresh S3 manifest read. Later queued runs are not canceled or blocked by Actions history: each compares its own fixed target with the current S3 index. The queue serializes execution but does not establish commit ancestry ordering, so an older queued target can publish an older manifest. Dispatch the intended current main version after obsolete queued work if necessary.
+Native reruns remain disabled in both the workflow and scripts. Use a new dispatch with its own fixed SHA, temporary context and fresh S3 manifest read. Later queued runs are not canceled or blocked by Actions history. The queue serializes execution but does not establish commit ancestry ordering, so an older queued target can publish an older manifest. Dispatch the intended current main version after obsolete queued work if necessary.
 
-Publication is not atomic. Replacing extracted content temporarily exposes missing or partial files, and successful writes before a later failure remain on S3. The old root manifest remains until the final upload succeeds. Retrying the same target compares against that old manifest and repeats the planned replacement. If a subsequent target reverts a partially written resource to its old manifest declaration, it is considered unchanged and is not automatically repaired. There is no object reconciliation or garbage collection; an operator must repair such partial/reverted objects explicitly. Do not publish to the same target outside the serialized workflow while a run is active.
+Publication is not atomic across resource objects. Replacing an existing case's extracted content temporarily exposes missing or partial files, and successful writes before a later failure remain on S3. The index remains at the last successfully committed checkpoint. If a subsequent target reverts a partially written resource to its old declaration, manifest comparison does not detect that object damage. Likewise, unchanged declarations cannot detect manually deleted objects. There is no object reconciliation or garbage collection; repair such objects explicitly. Do not publish to the same target outside the serialized workflow while a run is active.
 
 ## Verification scope
 
