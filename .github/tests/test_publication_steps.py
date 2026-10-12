@@ -177,6 +177,49 @@ class PublicationBoundaryTests(GitFixture):
         metadata = json.loads((self.store / 'metadata.json').read_text())
         self.assertEqual(metadata['bucket/cases/manifest.json']['sha256'], hashlib.sha256(raw).hexdigest())
 
+    def test_manifest_only_steps_discard_unvalidated_resource_operations(self):
+        self.add_case('B Case', 'b-case'); self.write_manifest(); self.commit()
+        remote = copy.deepcopy(self.entry); remote['name'] = 'remote-only'
+        baseline = json.dumps([*self.entries[::-1], remote])
+        preserved = self.target / 'a-case/extracted/keep'
+        for operation in ('REMOVE_CASE', 'REORDER', 'FINAL_SYNC'):
+            with self.subTest(operation=operation):
+                (self.target / 'manifest.json').write_text(baseline)
+                preserved.parent.mkdir(parents=True, exist_ok=True)
+                preserved.write_bytes(b'keep')
+                plan = self.prepare_run()
+                self.assertEqual([s['operation'] for s in plan['steps']],
+                                 ['REMOVE_CASE', 'REORDER', 'FINAL_SYNC'])
+                step = next(s for s in plan['steps'] if s['operation'] == operation)
+                step['packages'] = [{'name': 'a-case'}]
+                step['files'] = [{**self.entry['cover'], 'key': 'unplanned/cover.png'}]
+                self.plan_file.write_text(json.dumps(plan))
+                self.apply_run()
+                self.assertTrue(preserved.is_file(), 'Unchanged extracted files were deleted')
+                self.assertEqual(preserved.read_bytes(), b'keep')
+                self.assertFalse((self.target / 'unplanned/cover.png').exists())
+                self.assertFalse(any(c[0] == 's3' for c in self.calls()))
+                self.assertEqual((self.target / 'manifest.json').read_bytes(),
+                                 (self.root / 'manifest.json').read_bytes())
+                self.assertTrue(all(s['status'] == 'completed' and not s['files']
+                                    for s in self.status()))
+
+    def test_publication_overrides_aws_text_output_for_parsed_responses(self):
+        self.change()
+        self.env['AWS_DEFAULT_OUTPUT'] = 'text'
+        self.prepare_run(); self.apply_run()
+        self.assertEqual((self.target / 'a-case/A Case.png').read_bytes(), b'modified')
+        self.assertEqual((self.target / 'manifest.json').read_bytes(),
+                         (self.root / 'manifest.json').read_bytes())
+        self.assertTrue(all(s['status'] == 'completed' and s['cdn'] == 'completed'
+                            for s in self.status()))
+        for command in ('get-object', 'head-object', 'create-invalidation'):
+            calls = [c for c in self.calls() if c[1] == command]
+            self.assertTrue(calls, command + ' was not exercised')
+            for call in calls:
+                self.assertIn('--output', call)
+                self.assertEqual(call[call.index('--output') + 1], 'json')
+
     def test_sha_case_only_skips_resource_uploads(self):
         self.entry['cover']['sha256'] = self.entry['cover']['sha256'].upper()
         self.write_manifest(); self.commit()

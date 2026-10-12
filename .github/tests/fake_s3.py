@@ -14,6 +14,22 @@ with (root / 'calls.jsonl').open('a') as stream:
 if os.environ.get('FAKE_S3_FAIL') == args[1]:
     sys.exit(1)
 
+output_format = os.environ.get('AWS_DEFAULT_OUTPUT', 'json')
+if '--output' in args:
+    index = args.index('--output')
+    output_format = args[index + 1]
+    del args[index:index + 2]
+
+
+def emit(value):
+    if output_format == 'json':
+        print(json.dumps(value))
+    elif output_format == 'text':
+        # AWS text output is tab-delimited, not a JSON document.
+        print('\t'.join(str(item) for item in value.values()))
+    else:
+        raise AssertionError('Unsupported fixture output format: ' + output_format)
+
 
 def option(name):
     return args[args.index(name) + 1]
@@ -42,12 +58,12 @@ if args[:2] == ['s3api', 'get-object']:
         print('An error occurred (' + error + ') when calling the GetObject operation', file=sys.stderr)
         sys.exit(254)
     Path(args[6]).write_bytes(path.read_bytes())
-    print(json.dumps({'ETag': etag(path)}))
+    emit({'ETag': etag(path)})
     sys.exit(0)
 if args[:2] == ['s3api', 'head-object']:
     key = option('--bucket') + '/' + option('--key')
     path = root / key
-    print(json.dumps({'ContentLength': path.stat().st_size + int(bool(os.environ.get('FAKE_S3_BAD_HEAD'))), 'Metadata': metadata(key)}))
+    emit({'ContentLength': path.stat().st_size + int(bool(os.environ.get('FAKE_S3_BAD_HEAD'))), 'Metadata': metadata(key)})
     sys.exit(0)
 if args[:2] == ['s3api', 'put-object']:
     key = option('--bucket') + '/' + option('--key')
@@ -72,14 +88,14 @@ if args[:2] == ['s3api', 'put-object']:
     metadata(key, dict([option('--metadata').split('=', 1)]))
     with (root / 'manifests.jsonl').open('a') as stream:
         stream.write(json.dumps(json.loads(body)) + '\n')
-    print(json.dumps({'ETag': etag(path)}))
+    emit({'ETag': etag(path)})
     if os.environ.get('FAKE_S3_TIMEOUT_AFTER_PUT'):
         print('Read timeout on endpoint URL', file=sys.stderr)
         sys.exit(1)
     sys.exit(0)
 if args[:2] == ['cloudfront', 'create-invalidation']:
     assert option('--paths').startswith('/'), args
-    print(json.dumps({'Invalidation': {'Id': 'fixture-invalidation'}}))
+    emit({'Invalidation': {'Id': 'fixture-invalidation'}})
     sys.exit(0)
 if args[:2] == ['cloudfront', 'wait']:
     assert args[2] == 'invalidation-completed', args

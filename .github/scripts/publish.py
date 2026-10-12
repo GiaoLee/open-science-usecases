@@ -156,7 +156,7 @@ class S3:
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / 'manifest.json'
             result = subprocess.run(['aws', 's3api', 'get-object', '--bucket', self.bucket,
-                                     '--key', self.manifest_key, str(path)],
+                                     '--key', self.manifest_key, str(path), '--output', 'json'],
                                     capture_output=True, text=True)
             if result.returncode:
                 if re.search(r'\(NoSuchKey\) when calling the GetObject operation', result.stderr):
@@ -175,7 +175,8 @@ class S3:
 
     def verify_upload(self, key, size, checksum):
         result = subprocess.run(['aws', 's3api', 'head-object', '--bucket', self.bucket,
-                                 '--key', self.object_key(key)], capture_output=True, text=True, check=True)
+                                 '--key', self.object_key(key), '--output', 'json'],
+                                capture_output=True, text=True, check=True)
         head = json.loads(result.stdout)
         if head.get('ContentLength') != size or head.get('Metadata', {}).get('sha256') != checksum:
             raise ValueError('Uploaded object metadata mismatch: ' + key)
@@ -202,7 +203,7 @@ class S3:
             paths.append(quote('/' + self.object_key(case_name + '/'), safe='/') + '*')
         print('CDN paths: ' + json.dumps(paths), flush=True)
         result = subprocess.run(['aws', 'cloudfront', 'create-invalidation',
-                                 '--distribution-id', distribution, '--paths', *paths],
+                                 '--distribution-id', distribution, '--output', 'json', '--paths', *paths],
                                 capture_output=True, text=True, check=True)
         identifier = json.loads(result.stdout)['Invalidation']['Id']
         print('CDN invalidation submitted: ' + identifier, flush=True)

@@ -55,6 +55,9 @@ def build_steps(old, new, target_text):
 def group_files(plan):
     """Attach originals and expanded archive files to the same case checkpoint."""
     for step in plan['steps']:
+        # Rebuild execution lists exclusively from the validated plan inventory.
+        step['files'] = []
+        step['packages'] = []
         if step['operation'] in ('ADD_CASE', 'UPDATE_CASE'):
             step['files'] = [item for item in plan['files']
                              if item['key'].startswith(step['name'] + '/')]
