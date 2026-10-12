@@ -19,7 +19,7 @@ class PublicationDiagnosticsTests(unittest.TestCase):
             ({'JOB_STATUS': 'failure', 'PLAN_OUTCOME': 'failure'}, 'preparation failed'),
             ({'JOB_STATUS': 'failure', 'PLAN_OUTCOME': 'success'}, 'failed'),
             ({'JOB_STATUS': 'cancelled'}, 'cancelled'),
-            ({'PLAN_OUTCOME': 'success', 'HAS_UPLOADS': 'false'}, 'matches S3'),
+            ({'PLAN_OUTCOME': 'success', 'HAS_UPLOADS': 'false'}, 'final manifest sync'),
             ({'PLAN_OUTCOME': 'success', 'HAS_UPLOADS': 'true', 'APPLY_OUTCOME': 'success'}, 'completed'),
             ({'PLAN_OUTCOME': 'skipped'}, 'did not complete'),
         ]

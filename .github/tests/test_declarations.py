@@ -14,7 +14,7 @@ class DeclarationTests(GitFixture):
     def test_same_size_change_requires_changed_declaration(self):
         # A changed entry is being published, so its file edits still need declarations.
         self.entry['introduction']['sha256'] = '3' * 64
-        self.change(declaration='1')
+        self.change(declaration=self.entry['cover']['sha256'])
         self.assertTrue(any('synchronize' in error for error in self.check()))
         self.change(declaration='2')
         self.assertEqual(self.check(), [])

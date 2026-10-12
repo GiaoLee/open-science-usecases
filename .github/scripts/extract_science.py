@@ -12,6 +12,7 @@ import subprocess
 import sys
 import tarfile
 import tempfile
+import time
 import unicodedata
 from urllib.parse import quote, urlsplit
 from urllib.request import urlopen
@@ -74,6 +75,7 @@ def download(url, target, resource):
     # Stream large release packages to disk, binding mutable URLs to the declaration.
     digest = hashlib.sha256()
     count = 0
+    last_progress = time.monotonic()
     with urlopen(url, timeout=60) as response, target.open('wb') as output:
         while True:
             chunk = response.read(1024 * 1024)
@@ -83,6 +85,10 @@ def download(url, target, resource):
             if count > size:
                 raise ValueError('Downloaded package exceeds its declared byte size')
             digest.update(chunk); output.write(chunk)
+            if time.monotonic() - last_progress >= 10:
+                print(f'Download progress: {count}/{size} bytes', flush=True)
+                last_progress = time.monotonic()
+    print(f'Download complete: {count}/{size} bytes; verifying SHA-256', flush=True)
     if digest.hexdigest() != expected.lower():
         raise ValueError('Downloaded package SHA-256 does not match the manifest')
     if count != size:
@@ -227,6 +233,8 @@ def expand_plan(root, plan, output, base_url):
     result['files'] = ([item for item in plan['files'] if item['key'] != 'manifest.json']
                        + generated
                        + [item for item in plan['files'] if item['key'] == 'manifest.json'])
+    from publication_steps import group_files
+    group_files(result)
     result['extraction_complete'] = True
     return result
 
@@ -245,6 +253,10 @@ def main():
         args.plan.write_text(json.dumps(plan) + '\n', encoding='utf-8')
         raise ValueError('Prepare a fresh plan before retrying extraction')
     result = expand_plan(Path.cwd(), plan, args.output.resolve(), os.environ.get('CASE_FILE_BASE_URL', ''))
+    from publication_steps import write_artifacts, print_plan, Reporter
+    write_artifacts(result, args.plan.with_suffix(''))
+    Reporter(result, args.plan.with_suffix(''))
+    print_plan(result)
     args.plan.write_text(json.dumps(result) + '\n', encoding='utf-8')
 
 

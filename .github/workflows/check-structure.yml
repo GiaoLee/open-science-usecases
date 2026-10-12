@@ -63,7 +63,8 @@ jobs:
       github.ref == 'refs/heads/main' &&
       (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
     runs-on: ubuntu-latest
-    timeout-minutes: 120
+    # Each checkpoint waits for its own CloudFront invalidation.
+    timeout-minutes: 360
     steps:
       - name: Reject native reruns
         run: |
@@ -86,6 +87,7 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
           AWS_TARGET_FOLDER: ${{ secrets.AWS_TARGET_FOLDER }}
+          AWS_DISTRIBUITION_ID: ${{ secrets.AWS_DISTRIBUITION_ID }}
           AWS_EC2_METADATA_DISABLED: "true"
           AWS_PAGER: ""
         run: python3 .github/scripts/publish.py --after "$TARGET_SHA" --prepare "$RUNNER_TEMP/publication-plan.json"
@@ -102,7 +104,7 @@ jobs:
           CASE_FILE_BASE_URL: https://raw.githubusercontent.com/${{ github.repository }}/${{ github.sha }}
         run: python3 .github/scripts/extract_science.py --plan "$RUNNER_TEMP/publication-plan.json" --output "$RUNNER_TEMP/science-publication"
 
-      - name: Replace extracted content and upload resources, then manifest
+      - name: Publish each case checkpoint and refresh its CDN cache
         id: apply
         if: steps.plan.outputs.has_uploads == 'true'
         env:
@@ -110,23 +112,21 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
           AWS_TARGET_FOLDER: ${{ secrets.AWS_TARGET_FOLDER }}
+          AWS_DISTRIBUITION_ID: ${{ secrets.AWS_DISTRIBUITION_ID }}
           AWS_EC2_METADATA_DISABLED: "true"
           AWS_PAGER: ""
         run: python3 .github/scripts/publish.py --apply-plan "$RUNNER_TEMP/publication-plan.json"
 
-      - name: Invalidate the published manifest in CloudFront
-        if: steps.apply.outcome == 'success'
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
-          AWS_DISTRIBUITION_ID: ${{ secrets.AWS_DISTRIBUITION_ID }}
-          AWS_EC2_METADATA_DISABLED: "true"
-          AWS_PAGER: ""
-        run: |
-          aws cloudfront create-invalidation \
-            --distribution-id "$AWS_DISTRIBUITION_ID" \
-            --paths "/open-science/usecases/manifest.json"
+      - name: Save publication manifests, file lists and statuses
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: publication-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            ${{ runner.temp }}/publication-plan.json
+            ${{ runner.temp }}/publication-plan/
+          if-no-files-found: ignore
+          retention-days: 14
 
       - name: Explain publication result
         if: always()
@@ -143,9 +143,9 @@ jobs:
           elif [ "$JOB_STATUS" = "failure" ]; then
             reason='Publication failed; later processing and uploads stopped. Inspect the failed step.'
           elif [ "$PLAN_OUTCOME" = "success" ] && [ "$HAS_UPLOADS" = "false" ]; then
-            reason='Repository manifest matches S3; no uploads are needed.'
+            reason='No resource changes; the final manifest sync and CDN refresh are still required.'
           elif [ "$APPLY_OUTCOME" = "success" ]; then
-            reason='Publication completed; the root manifest was uploaded after all resources.'
+            reason='Publication completed; every checkpoint and the final repository manifest were committed and their CDN invalidations completed.'
           else
             reason='Publication did not complete; inspect the step outcomes.'
           fi
