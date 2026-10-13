@@ -444,6 +444,42 @@
       "title": "which deal is actually cheaper",
       "name": "which-deal-is-actually-cheaper",
       "category": "Curiosity Lab"
+    },
+    {
+      "title": "AI or Human - What Story Structure Reveals",
+      "name": "ai-or-human-what-story-structure-reveals",
+      "category": "AI Research",
+      "creator": "@Saccc_c"
+    },
+    {
+      "title": "Can a Fruit Fly Connectome Learn Cube Moves",
+      "name": "can-a-fruit-fly-connectome-learn-cube-moves",
+      "category": "Curiosity Lab",
+      "creator": "@MinLiBuilds"
+    },
+    {
+      "title": "Does AI Practice Translate into Independent Learning",
+      "name": "does-ai-practice-translate-into-independent-learning",
+      "category": "AI Research",
+      "creator": "@cheery9998"
+    },
+    {
+      "title": "Recursive Self-Improvement - What Does the Evidence Show",
+      "name": "recursive-self-improvement-what-does-the-evidence-show",
+      "category": "AI Research",
+      "creator": "@dongxi_nlp"
+    },
+    {
+      "title": "Reproducing the Dexamethasone Gene Response",
+      "name": "reproducing-the-dexamethasone-gene-response",
+      "category": "Curiosity Lab",
+      "creator": "@servasyy_ai"
+    },
+    {
+      "title": "Soil Heavy Metals - Upstream vs Downstream",
+      "name": "soil-heavy-metals-upstream-vs-downstream",
+      "category": "Curiosity Lab",
+      "creator": "@RealYDT"
     }
   ]
 }

@@ -6,14 +6,14 @@ Cases follow upstream's [classification snapshot](https://github.com/aipoch/open
 
 | Stage | Catalog directory | `catalog_name` | Cases | Migration |
 | --- | --- | --- | --- | --- |
-| 1 | [`AI Research/`](<AI Research/>) | `ai-research` | 43 | 40 existing cases and three imported cases |
-| 2 | [`Curiosity Lab/`](<Curiosity Lab/>) | `curiosity-lab` | 45 | 41 existing cases and four imported cases |
+| 1 | [`AI Research/`](<AI Research/>) | `ai-research` | 46 | 43 existing cases and three creator cases |
+| 2 | [`Curiosity Lab/`](<Curiosity Lab/>) | `curiosity-lab` | 48 | 45 existing cases and three creator cases |
 
-The manifest now contains 89 cases. **First Flight vs. Evening Flight - Which Is More Reliable** is absent from the upstream classification snapshot and remains under `usecases/` with both classification fields set to `""`. **Academic Research** has no cases in that snapshot, so no directory or placeholder entry is created.
+The manifest contains 94 cases synchronized with the Hugging Face collection: AI Research (46) and Curiosity Lab (48). Academic Research is reserved for future content. The previously excluded flight case is not in the active index; its legacy files remain untouched under `usecases/`.
 
-`manifest.json` is the authoritative publication index, including classification and resource paths. `categories.json` preserves upstream category membership as a reference; it excludes the unclassified fork case. The 88 classified cases use the posters and introductions from upstream commit `2d19bdb`, with remote session links preserved.
+`manifest.json` is the authoritative publication index, including catalog fields and resource paths. `categories.json` mirrors the 94 classified cases and records Creator attribution where supplied.
 
-Each entry contains a `title`, a unique kebab-case `name`, the two classification strings, and three resources: `cover`, `case`, and `introduction`. Every resource provides `file_name`, `path`, `bytes`, `sha256`, and `release_url`. An empty URL selects a local file; a nonempty URL selects a remote resource. Fully remote entries do not need local directories but must still retain valid paths. The seven imported packages across both stages retain their upstream remote sources; their covers and introductions are stored locally.
+Each entry contains a `title`, a unique kebab-case `name`, the two classification strings, and three resources: `cover`, `case`, and `introduction`. Every resource provides `file_name`, `path`, `bytes`, `sha256`, and `release_url`. An empty URL selects a local file; a nonempty URL selects a remote resource. Fully remote entries do not need local directories but must still retain valid paths. The thirteen imported packages retain their pinned Hugging Face sources; their covers and introductions are stored locally.
 
 A nonempty `catalog` is the display label and a directory at the repository root. All resource paths start with `<catalog>/` and may use independent subdirectories beneath it. Derive `catalog_name` as ASCII kebab-case, for example `Data Science` becomes `data-science`. Non-ASCII names, empty conversions, and collisions between different catalogs produce errors for the user to resolve. Multiple cases may share a catalog. Both classification fields must be empty or both populated.
 
