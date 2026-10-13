@@ -15,4 +15,4 @@ The repository includes the existing completed cases from the source archive and
 
 ## Category index and package sources
 
-[Browse 88 cases by category](CATEGORIES.md): Curiosity Lab (45), AI Research (43), and Academic Research (reserved). `categories.json` records category membership without changing the publication manifest schema. Each case has a same-named poster and introduction. Existing local session exports are retained; seven additional exports are referenced through fixed Hugging Face revision URLs in `manifest.json`.
+[Browse 94 cases by category](CATEGORIES.md): Curiosity Lab (48), AI Research (46), and Academic Research (reserved). `categories.json` records category membership without changing the publication manifest schema. Each case has a same-named poster and introduction. Existing local session exports are retained; thirteen additional exports are referenced through fixed Hugging Face revision URLs in `manifest.json`.

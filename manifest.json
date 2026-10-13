@@ -2022,5 +2022,143 @@
       "bytes": 1552,
       "sha256": "4b7dbffbe146905a5d808145748378ef827498cd92d36c631b18ca030d52f784"
     }
+  },
+  {
+    "title": "AI or Human - What Story Structure Reveals",
+    "name": "ai-or-human-what-story-structure-reveals",
+    "cover": {
+      "path": "AI or Human - What Story Structure Reveals/AI or Human - What Story Structure Reveals.png",
+      "file_name": "AI or Human - What Story Structure Reveals.png",
+      "bytes": 1978015,
+      "sha256": "f109b0bd64edcef9f98044f38feee93d9358405fe07dccfc4da50e2febe5e1b1"
+    },
+    "case": {
+      "path": "AI or Human - What Story Structure Reveals/AI or Human - What Story Structure Reveals.science",
+      "file_name": "AI or Human - What Story Structure Reveals.science",
+      "bytes": 2559813,
+      "sha256": "5d2daf93d89b5f7542ae6f5e7322ce39b088351ae28dee56649686d51eba00bb",
+      "release_url": "https://huggingface.co/datasets/AIPOCH-AI/open-science-usecases/resolve/74d0a8c066edb235b1587002cb210796b15be777/AI%20Research/AI%20or%20Human%20-%20What%20Story%20Structure%20Reveals/AI%20or%20Human%20-%20What%20Story%20Structure%20Reveals.science"
+    },
+    "introduction": {
+      "path": "AI or Human - What Story Structure Reveals/AI or Human - What Story Structure Reveals.md",
+      "file_name": "AI or Human - What Story Structure Reveals.md",
+      "bytes": 1026,
+      "sha256": "ac6a4c32e4f407d083df078828b5ea542a3ca8809f004e847338133a807e7897"
+    }
+  },
+  {
+    "title": "Can a Fruit Fly Connectome Learn Cube Moves",
+    "name": "can-a-fruit-fly-connectome-learn-cube-moves",
+    "cover": {
+      "path": "Can a Fruit Fly Connectome Learn Cube Moves/Can a Fruit Fly Connectome Learn Cube Moves.png",
+      "file_name": "Can a Fruit Fly Connectome Learn Cube Moves.png",
+      "bytes": 2529084,
+      "sha256": "5f58e3522082b14889a1a93209c77d93e1faca761b25435618c92fc5a7f7716f"
+    },
+    "case": {
+      "path": "Can a Fruit Fly Connectome Learn Cube Moves/Can a Fruit Fly Connectome Learn Cube Moves.science",
+      "file_name": "Can a Fruit Fly Connectome Learn Cube Moves.science",
+      "bytes": 26933904,
+      "sha256": "46548ab8b44782744363c409baafeecc48ea0f83af5298ca354566f969217442",
+      "release_url": "https://huggingface.co/datasets/AIPOCH-AI/open-science-usecases/resolve/74d0a8c066edb235b1587002cb210796b15be777/Curiosity%20Lab/Can%20a%20Fruit%20Fly%20Connectome%20Learn%20Cube%20Moves/Can%20a%20Fruit%20Fly%20Connectome%20Learn%20Cube%20Moves.science"
+    },
+    "introduction": {
+      "path": "Can a Fruit Fly Connectome Learn Cube Moves/Can a Fruit Fly Connectome Learn Cube Moves.md",
+      "file_name": "Can a Fruit Fly Connectome Learn Cube Moves.md",
+      "bytes": 1172,
+      "sha256": "fbdf3dff1151e7cc319d2bb0e5d632f27bf566abe8a49d65a38a60168e175141"
+    }
+  },
+  {
+    "title": "Does AI Practice Translate into Independent Learning",
+    "name": "does-ai-practice-translate-into-independent-learning",
+    "cover": {
+      "path": "Does AI Practice Translate into Independent Learning/Does AI Practice Translate into Independent Learning.png",
+      "file_name": "Does AI Practice Translate into Independent Learning.png",
+      "bytes": 1886152,
+      "sha256": "e575cf2ab344572ecbf25573d0fdd03432d684dc2b0ffa82f7cb19544dd7163f"
+    },
+    "case": {
+      "path": "Does AI Practice Translate into Independent Learning/Does AI Practice Translate into Independent Learning.science",
+      "file_name": "Does AI Practice Translate into Independent Learning.science",
+      "bytes": 1155034,
+      "sha256": "9050e52f14e4b9c7d37a7e3f9c7990471d86358af15ac9413588abcd3aa97d9e",
+      "release_url": "https://huggingface.co/datasets/AIPOCH-AI/open-science-usecases/resolve/74d0a8c066edb235b1587002cb210796b15be777/AI%20Research/Does%20AI%20Practice%20Translate%20into%20Independent%20Learning/Does%20AI%20Practice%20Translate%20into%20Independent%20Learning.science"
+    },
+    "introduction": {
+      "path": "Does AI Practice Translate into Independent Learning/Does AI Practice Translate into Independent Learning.md",
+      "file_name": "Does AI Practice Translate into Independent Learning.md",
+      "bytes": 1080,
+      "sha256": "bc0a78dc80b7b399ece82e1527a2f29c5040adb6110ebb0412df63d678a12930"
+    }
+  },
+  {
+    "title": "Recursive Self-Improvement - What Does the Evidence Show",
+    "name": "recursive-self-improvement-what-does-the-evidence-show",
+    "cover": {
+      "path": "Recursive Self-Improvement - What Does the Evidence Show/Recursive Self-Improvement - What Does the Evidence Show.png",
+      "file_name": "Recursive Self-Improvement - What Does the Evidence Show.png",
+      "bytes": 1989057,
+      "sha256": "c6b6b1b99219912e34c81baf83873b307a4f3b68f8b7800cc4a8ec1765143b55"
+    },
+    "case": {
+      "path": "Recursive Self-Improvement - What Does the Evidence Show/Recursive Self-Improvement - What Does the Evidence Show.science",
+      "file_name": "Recursive Self-Improvement - What Does the Evidence Show.science",
+      "bytes": 46389739,
+      "sha256": "35a02c5eb5201b5b3ac34c8ed82b2137fe00cc69ad71b3907decd7ab8c903a18",
+      "release_url": "https://huggingface.co/datasets/AIPOCH-AI/open-science-usecases/resolve/74d0a8c066edb235b1587002cb210796b15be777/AI%20Research/Recursive%20Self-Improvement%20-%20What%20Does%20the%20Evidence%20Show/Recursive%20Self-Improvement%20-%20What%20Does%20the%20Evidence%20Show.science"
+    },
+    "introduction": {
+      "path": "Recursive Self-Improvement - What Does the Evidence Show/Recursive Self-Improvement - What Does the Evidence Show.md",
+      "file_name": "Recursive Self-Improvement - What Does the Evidence Show.md",
+      "bytes": 1103,
+      "sha256": "537c978139ce155324d68e04df65dc02e8e988a3a4cbe4db86700fbea8b77463"
+    }
+  },
+  {
+    "title": "Reproducing the Dexamethasone Gene Response",
+    "name": "reproducing-the-dexamethasone-gene-response",
+    "cover": {
+      "path": "Reproducing the Dexamethasone Gene Response/Reproducing the Dexamethasone Gene Response.png",
+      "file_name": "Reproducing the Dexamethasone Gene Response.png",
+      "bytes": 2340896,
+      "sha256": "eeb09bf35e648b02a5a898c9848097fd582f3d64918179096e44df137b1f3c0a"
+    },
+    "case": {
+      "path": "Reproducing the Dexamethasone Gene Response/Reproducing the Dexamethasone Gene Response.science",
+      "file_name": "Reproducing the Dexamethasone Gene Response.science",
+      "bytes": 17147681,
+      "sha256": "3541ad1abb6ea95b71f80dcc07b58702d481db3402396e85cbe9702c92b74646",
+      "release_url": "https://huggingface.co/datasets/AIPOCH-AI/open-science-usecases/resolve/74d0a8c066edb235b1587002cb210796b15be777/Curiosity%20Lab/Reproducing%20the%20Dexamethasone%20Gene%20Response/Reproducing%20the%20Dexamethasone%20Gene%20Response.science"
+    },
+    "introduction": {
+      "path": "Reproducing the Dexamethasone Gene Response/Reproducing the Dexamethasone Gene Response.md",
+      "file_name": "Reproducing the Dexamethasone Gene Response.md",
+      "bytes": 1060,
+      "sha256": "5633a05e2148a96a4b06e1b0dfd6b79b318820331a865c4fa119217ccac46f24"
+    }
+  },
+  {
+    "title": "Soil Heavy Metals - Upstream vs Downstream",
+    "name": "soil-heavy-metals-upstream-vs-downstream",
+    "cover": {
+      "path": "Soil Heavy Metals - Upstream vs Downstream/Soil Heavy Metals - Upstream vs Downstream.png",
+      "file_name": "Soil Heavy Metals - Upstream vs Downstream.png",
+      "bytes": 2629811,
+      "sha256": "efc41ae5a58402d8516d3a933bbfce9ad2339bdd741103be193dc7fe4eb6fcdf"
+    },
+    "case": {
+      "path": "Soil Heavy Metals - Upstream vs Downstream/Soil Heavy Metals - Upstream vs Downstream.science",
+      "file_name": "Soil Heavy Metals - Upstream vs Downstream.science",
+      "bytes": 1230308,
+      "sha256": "8dff5e78d71470a647040ff48c614cfba6a93e001dca4b904bf7aa7638136fec",
+      "release_url": "https://huggingface.co/datasets/AIPOCH-AI/open-science-usecases/resolve/74d0a8c066edb235b1587002cb210796b15be777/Curiosity%20Lab/Soil%20Heavy%20Metals%20-%20Upstream%20vs%20Downstream/Soil%20Heavy%20Metals%20-%20Upstream%20vs%20Downstream.science"
+    },
+    "introduction": {
+      "path": "Soil Heavy Metals - Upstream vs Downstream/Soil Heavy Metals - Upstream vs Downstream.md",
+      "file_name": "Soil Heavy Metals - Upstream vs Downstream.md",
+      "bytes": 1022,
+      "sha256": "6272113d4e8bb7fe8ed51590f4fa11d56d215fdc5c308d692bf6a05ce42dc768"
+    }
   }
 ]
