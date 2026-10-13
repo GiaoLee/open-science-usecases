@@ -1,36 +1,84 @@
-# AIPOCH Open-Science Cases
+---
+pretty_name: AIPOCH Open-Science Use Cases
+size_categories:
+  - n<1K
+tags:
+  - aipoch
+  - open-science
+  - research-workflows
+  - use-cases
+---
 
-This repository collects completed Open-Science session exports, covers, and introductions. The root `manifest.json` serves as the case index.
+# AIPOCH Open-Science Use Cases
 
-Cases follow upstream's [classification snapshot](https://github.com/aipoch/open-science-usecases/blob/2d19bdbaffa776fb6c75951005ac88e74cc6aac9/categories.json), integrated with this fork's catalog fields and directories:
+A collection of Open-Science session exports and their accompanying case posters, published by AIPOCH-AI. The collection covers research questions, data analysis, simulations, and practical AI workflows. Use the posters to browse topics and the available `.science` files to inspect the corresponding sessions in Open-Science.
 
-| Stage | Catalog directory | `catalog_name` | Cases | Migration |
-| --- | --- | --- | --- | --- |
-| 1 | [`AI Research/`](<AI Research/>) | `ai-research` | 43 | 40 existing cases and three imported cases |
-| 2 | [`Curiosity Lab/`](<Curiosity Lab/>) | `curiosity-lab` | 45 | 41 existing cases and four imported cases |
+[Browse all cases](CASES.md) · [Browse repository files](.) · [File manifest](manifest.json)
 
-The manifest now contains 89 cases. **First Flight vs. Evening Flight - Which Is More Reliable** is absent from the upstream classification snapshot and remains under `usecases/` with both classification fields set to `""`. **Academic Research** has no cases in that snapshot, so no directory or placeholder entry is created.
+## GitHub synchronization
 
-`manifest.json` is the authoritative publication index, including classification and resource paths. `categories.json` preserves upstream category membership as a reference; it excludes the unclassified fork case. The 88 classified cases use the posters and introductions from upstream commit `2d19bdb`, with remote session links preserved.
+This GitHub copy synchronizes 124 upstream cases from Hugging Face snapshot `b95158d1fb9fec49a5044657aad02fa7145eb64d` and retains one existing unclassified case. The 124 synchronized PNG posters are compressed to at most 500 KB each. Existing `.science` packages and their configured sources are unchanged. New packages larger than 100 MiB are available as GitHub Release assets through their download links and `manifest.json`; smaller new packages are stored in their case folders. The CLI examples below download the upstream Hugging Face collection.
 
-Each entry contains a `title`, a unique kebab-case `name`, the two classification strings, and three resources: `cover`, `case`, and `introduction`. Every resource provides `file_name`, `path`, `bytes`, `sha256`, and `release_url`. An empty URL selects a local file; a nonempty URL selects a remote resource. Fully remote entries do not need local directories but must still retain valid paths. The seven imported packages across both stages retain their upstream remote sources; their covers and introductions are stored locally.
+## Categories
 
-A nonempty `catalog` is the display label and a directory at the repository root. All resource paths start with `<catalog>/` and may use independent subdirectories beneath it. Derive `catalog_name` as ASCII kebab-case, for example `Data Science` becomes `data-science`. Non-ASCII names, empty conversions, and collisions between different catalogs produce errors for the user to resolve. Multiple cases may share a catalog. Both classification fields must be empty or both populated.
+| Category | Cases | Focus |
+|---|---:|---|
+| [Curiosity Lab](Curiosity%20Lab) | 48 | Everyday curiosity, natural phenomena, probability, finance, and exploratory science |
+| [AI Research](AI%20Research) | 46 | AI capabilities, reliability, behavior, costs, and research progress |
+| [Academic Research](Academic%20Research) | 30 | Archived scientific studies across biomedical research, chemistry, environment, and climate |
+
+Categories follow the principal question of each case; they are navigation labels rather than evidence-quality ratings.
+
+## File structure
+
+Each case has its own folder within one of the three category directories:
 
 ```text
-Data Science/example/
-  cover.png
-  session.science
-  introduction.md
+<Category>/
+  <Case title>/
+    <Case title>.md
+    <Case title>.science
+    <Case title>.png
 ```
 
-Directories, titles, and names can be chosen independently. S3 always uses `<name>/<file_name>`, with extracted package contents under `<name>/extracted/`. Moving directories does not change S3 resource keys.
+- **`.md`**: a case-specific introduction covering the archived study, interpretation and limits, and package provenance.
+- **`.science`**: a native Open-Science session export, preserved as supplied.
+- **`.png`**: the accompanying poster summarizing the case.
+- **`CASES.md`**: a complete case index with links to the available files.
+- **`manifest.json`**: an inventory of all case introductions, session exports, and posters, recording the category, case title, filename, repository path, byte size, and SHA-256 hash.
 
-Original `.science` session contents remain unchanged. Simulation demonstrations and unresolved conclusions noted in a case remain subject to the source session; inclusion does not guarantee general model performance.
+The latest seven case folders are named after their poster titles. Earlier cases retain their existing names. Some titles contain question marks or Unicode punctuation; adapt local filenames if your operating system requires it.
 
-- [Browse cases by catalog](CATEGORIES.md)
-- [Adding and updating cases](AGENTS.md)
-- [Validation rules and commands](.github/CHECKING.md)
-- [Publication, deduplication, and recovery](.github/PUBLISHING.md)
+## How to use
 
-Local tests: `python3 -B -m unittest discover -s .github/tests -v`. Tests use temporary data and fake S3; they do not perform live publication.
+1. Open the [case index](CASES.md) and choose a topic.
+2. View the poster, then download the `.science` export where available.
+3. Open the export using an Open-Science version that supports the supplied session format. This repository does not specify a minimum compatible application version.
+4. Review the source session, assumptions, inputs, and unresolved issues before interpreting or reusing its conclusions. Continuing a workflow may require its original tools, credentials, dependencies, or external data.
+
+To download the collection using the Hugging Face CLI:
+
+```bash
+hf download AIPOCH-AI/open-science-usecases --repo-type dataset --local-dir ./open-science-usecases
+```
+
+To download one example:
+
+```bash
+hf download AIPOCH-AI/open-science-usecases "AI Research/The 100K Cliff/The 100K Cliff.science" --repo-type dataset --local-dir ./open-science-usecases
+```
+
+For an exact snapshot, add `--revision <commit-sha>` to the download command. The collection contains application session packages rather than a uniform table of examples; use the native exports to inspect the cases.
+
+## Intended use and limitations
+
+The materials support browsing workflow examples, inspecting recorded sessions, and exploring case-specific methods. Posters are summaries and should be read alongside the available source sessions.
+
+Synthetic demonstrations, estimates, and unresolved findings remain identified in the source materials. Publication of an export does not establish that its conclusions are correct, that the workflow will reproduce in another environment, or that its model performance generalizes. No common evaluation protocol or independently validated aggregate performance score is provided for this collection.
+
+Case selection is curated rather than a representative sample of research tasks. Dates, external services, models, tools, and data sources may differ between cases. Review case-specific provenance and any third-party reuse conditions before reuse.
+
+## License
+
+No repository-wide license has been declared in this snapshot. Public availability should not be interpreted as a grant of unrestricted reuse rights. Check with the publisher and review the rights associated with any third-party material before redistribution.
+
