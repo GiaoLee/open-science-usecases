@@ -1,5 +1,5 @@
 # AI Research
 
-AI capabilities, reliability, behavior, economics, and research progress.
+46 archived cases.
 
-[Browse the complete case index](../CASES.md).
+[Browse the complete case index](https://huggingface.co/datasets/AIPOCH-AI/open-science-usecases/blob/main/CASES.md).

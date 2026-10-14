@@ -13,19 +13,15 @@ tags:
 
 A collection of Open-Science session exports and their accompanying case posters, published by AIPOCH-AI. The collection covers research questions, data analysis, simulations, and practical AI workflows. Use the posters to browse topics and the available `.science` files to inspect the corresponding sessions in Open-Science.
 
-[Browse all cases](CASES.md) · [Browse repository files](.) · [File manifest](manifest.json)
-
-## GitHub synchronization
-
-This GitHub copy synchronizes 124 upstream cases from Hugging Face snapshot `b95158d1fb9fec49a5044657aad02fa7145eb64d` and retains one existing unclassified case. The 124 synchronized PNG posters are compressed to at most 500 KB each. Existing `.science` packages and their configured sources are unchanged. New packages larger than 100 MiB are available as GitHub Release assets through their download links and `manifest.json`; smaller new packages are stored in their case folders. The CLI examples below download the upstream Hugging Face collection.
+[Browse all cases](https://huggingface.co/datasets/AIPOCH-AI/open-science-usecases/blob/main/CASES.md) · [Browse repository files](https://huggingface.co/datasets/AIPOCH-AI/open-science-usecases/tree/main) · [File manifest](https://huggingface.co/datasets/AIPOCH-AI/open-science-usecases/blob/main/manifest.json)
 
 ## Categories
 
 | Category | Cases | Focus |
 |---|---:|---|
-| [Curiosity Lab](Curiosity%20Lab) | 48 | Everyday curiosity, natural phenomena, probability, finance, and exploratory science |
-| [AI Research](AI%20Research) | 46 | AI capabilities, reliability, behavior, costs, and research progress |
-| [Academic Research](Academic%20Research) | 30 | Archived scientific studies across biomedical research, chemistry, environment, and climate |
+| [Curiosity Lab](https://huggingface.co/datasets/AIPOCH-AI/open-science-usecases/tree/main/Curiosity%20Lab) | 48 | Everyday curiosity, natural phenomena, probability, finance, and exploratory science |
+| [AI Research](https://huggingface.co/datasets/AIPOCH-AI/open-science-usecases/tree/main/AI%20Research) | 46 | AI capabilities, reliability, behavior, costs, and research progress |
+| [Academic Research](https://huggingface.co/datasets/AIPOCH-AI/open-science-usecases/tree/main/Academic%20Research) | 30 | Archived scientific studies across biomedical research, chemistry, environment, and climate |
 
 Categories follow the principal question of each case; they are navigation labels rather than evidence-quality ratings.
 
@@ -44,8 +40,9 @@ Each case has its own folder within one of the three category directories:
 - **`.md`**: a case-specific introduction covering the archived study, interpretation and limits, and package provenance.
 - **`.science`**: a native Open-Science session export, preserved as supplied.
 - **`.png`**: the accompanying poster summarizing the case.
-- **`CASES.md`**: a complete case index with links to the available files.
-- **`manifest.json`**: an inventory of all case introductions, session exports, and posters, recording the category, case title, filename, repository path, byte size, and SHA-256 hash.
+- **`CASES.md`**: a complete case index with absolute links to the introductions.
+- **`categories.json`**: category membership and supplied Creator attribution.
+- **`manifest.json`**: the case-level publication index. Each case declares `title`, stable `name`, `catalog`, `catalog_name`, and `cover`, `case`, and `introduction` resource objects. Each resource records its filename, repository path, byte size, SHA-256, and `release_url`; an empty URL selects the file stored in this repository.
 
 The latest seven case folders are named after their poster titles. Earlier cases retain their existing names. Some titles contain question marks or Unicode punctuation; adapt local filenames if your operating system requires it.
 

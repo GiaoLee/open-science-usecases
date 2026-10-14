@@ -1,5 +1,5 @@
 # Curiosity Lab
 
-Everyday questions, natural phenomena, probability, finance, and exploratory science.
+48 archived cases.
 
-[Browse the complete case index](../CASES.md).
+[Browse the complete case index](https://huggingface.co/datasets/AIPOCH-AI/open-science-usecases/blob/main/CASES.md).

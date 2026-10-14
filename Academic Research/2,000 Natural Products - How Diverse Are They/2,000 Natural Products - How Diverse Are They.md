@@ -10,13 +10,8 @@ Results depend on the captured pool, fingerprint and selection criterion, rather
 
 ## Package and provenance
 
-The unchanged [research package](https://github.com/GiaoLee/open-science-usecases/releases/download/hf-sync-packages-2026-10-13/2-000-natural-products-how-diverse-are-they.science) comes from the [upstream archive](https://huggingface.co/datasets/AIPOCH-AI/open-science-cases/tree/4a22011b2b0d08492b55d75798ecb29acbeba32c/cases/case19). It retains the original conversation and included scientific artifacts, including analysis code, results and figures. The poster is an AI-generated thematic illustration, not study evidence. This introduction summarizes archived findings; the analysis was not rerun. Later bounded checks do not certify the entire study or mean the original package was corrected.
+The unchanged research package comes from the [upstream archive](https://huggingface.co/datasets/AIPOCH-AI/open-science-cases/tree/4a22011b2b0d08492b55d75798ecb29acbeba32c/cases/case19). It retains the original conversation and included scientific artifacts, including analysis code, results and figures. The poster is an AI-generated thematic illustration, not study evidence. This introduction summarizes archived findings; the analysis was not rerun. Later bounded checks do not certify the entire study or mean the original package was corrected.
 
 ## Import provenance
 
 This case was added to the Academic Research category on 2026-10-13, with [the archived upstream case](https://huggingface.co/datasets/AIPOCH-AI/open-science-cases/tree/4a22011b2b0d08492b55d75798ecb29acbeba32c/cases/case19) recorded as its source. The supplied session export and poster were uploaded without changing their contents. This introduction summarizes the archived findings and was standardized for the repository. The study, external data sources, and scientific results were not rerun or independently reverified for this import.
-
-## Case files
-
-- [Session export](https://github.com/GiaoLee/open-science-usecases/releases/download/hf-sync-packages-2026-10-13/2-000-natural-products-how-diverse-are-they.science)
-- [Case poster](./2%2C000%20Natural%20Products%20-%20How%20Diverse%20Are%20They.png)
